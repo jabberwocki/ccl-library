@@ -1,0 +1,85 @@
+/********************************************************************
+
+Patients on CDM "x" Query
+
+Purpose: Find all patients with active orders for a given pharmacy 
+         product CDM.
+Author: J. Aaron Britton
+Contact: jaaron.britton@gmail.com
+
+********************************************************************/
+
+
+select
+	p.name_last
+	, p.name_first
+	, MRN = pa.alias
+	, FIN = ea.alias
+	, Pt_Facility = uar_get_code_display(e.loc_facility_cd)
+	, Pt_Unit = uar_get_code_display(e.loc_nurse_unit_cd)
+	, o.ordered_as_mnemonic
+	, pp.label_desc
+	, Order_Status = uar_get_code_display(o.order_status_cd)
+	, pp.cdm
+
+from
+	orders o
+	, person p
+	, person_alias pa
+	, encntr_alias ea
+	, order_product op
+	, pha_product pp
+	, encounter e
+	
+
+plan o 
+	where o.catalog_cd = 643195.00
+	and o.active_ind = 1
+	and o.order_status_cd in (
+	              2547 ; incomplete
+							  , 2550 ; ordered
+							  )
+
+/* add or removed based on the information below: 
+
+       2543.00	Completed
+       2544.00	Deleted
+       2545.00	Discontinued
+       2546.00	Future
+       2547.00	Incomplete
+       2549.00	On Hold, Med Student
+       2550.00	Ordered
+       2551.00	Pending Review
+       2552.00	Suspended
+       2553.00	Unscheduled
+     614538.00	Transfer/Canceled
+     635196.00	Pending Complete
+     635197.00	Voided With Results
+       2542.00	Canceled
+       2548.00	InProcess
+*/
+
+join p
+	where o.person_id = p.person_id
+
+join pa
+	where p.person_id = pa.person_id
+	and pa.person_alias_type_cd = 10.00 ;MRN
+
+join op
+	where o.order_id = op.order_id
+	
+join pp
+	where op.item_id = pp.item_id
+	and pp.cdm = "4304134" /*Make sure new CDMs go inside the quotes.  for multiple CDMs, use the following format instead:
+	and pp.cdm in ("cdm1", "cdm2", "cdm3")
+	*/
+	 
+join e
+	where o.person_id = e.person_id
+
+join ea	
+	where e.encntr_id = ea.encntr_id
+	and ea.encntr_alias_type_cd = 1077 ;FIN
+
+with time = 60
