@@ -1,0 +1,32 @@
+/***************************************************
+ 
+ Section/Form Query
+               
+Purpose: Determine which PowerForms make use of
+                                  a particular section.
+ 
+****************************************************/
+ 
+SELECT DISTINCT
+        FORM_DESCRIPTION=SUBSTRING(1,50,F.DESCRIPTION)
+        , SECTION_DESC=SUBSTRING(1,50,S.DESCRIPTION)
+      
+ 
+FROM    DCP_FORMS_DEF D
+        , DCP_FORMS_REF F
+        , DCP_SECTION_REF S
+       
+PLAN F
+                WHERE F.ACTIVE_IND=1
+JOIN D
+                WHERE F.DCP_FORM_INSTANCE_ID = D.DCP_FORM_INSTANCE_ID
+                AND D.ACTIVE_IND=1
+ 
+JOIN S
+                WHERE S.DCP_SECTION_REF_ID = D.DCP_SECTION_REF_ID
+                AND S.ACTIVE_IND=1
+                and s.description = "Common ED Billable Items GH" ;enter section description here
+ 
+ORDER BY F.DESCRIPTION, S.DESCRIPTION
+ 
+WITH time = 30
