@@ -1,0 +1,100 @@
+
+/**************************************************************************
+Query: Combination Order Query
+Purpose: List patients all patients with active orders for two different
+orderables.
+Author: J. Aaron Britton
+Contact: jaaron.britton@gmail.com
+Date: 11/11/2015
+**************************************************************************/
+
+select distinct
+    p.name_last
+    , p.name_first
+    , MRN = pa.alias
+    , FIN = ea.alias
+    , Pt_Facility = uar_get_code_display(e.loc_facility_cd)
+    , Pt_Unit = uar_get_code_display(e.loc_nurse_unit_cd)
+    , Med1 = uar_get_code_display(o1.catalog_cd)
+    , Med1_Sentence = o1.clinical_display_line
+    , Med1_StartDtTm = o1.CURRENT_START_DT_TM
+    , Med1_Status = uar_get_code_display(o1.order_status_cd)
+    , Med1_OrderID	= o1.order_id
+    , Med2 = uar_get_code_display(o2.catalog_cd)
+    , Med2_Sentence = o2.clinical_display_line
+    , Med2_StartDtTm = o2.CURRENT_START_DT_TM
+    , Med2_Status = uar_get_code_display(o2.order_status_cd)
+    , Med2_OrderID	= o2.order_id
+
+from
+    orders o1
+    , (inner join orders o2 on 
+    	(o1.person_id = o2.person_id
+        and o1.encntr_id = o2.encntr_id  ;--same encounter
+        and o1.order_id != o2.order_id  ;--different primary key ensures a different order
+        and o2.active_ind = 1
+        and o2.order_status_cd = 2550 ;ordered
+        and o2.DISCONTINUE_IND = 0
+        and o2.DISCONTINUE_EFFECTIVE_DT_TM = NULL 
+        and o2.catalog_cd = 5814301 ; piper-tazo  ;--Input catalog codes for second medication above.
+        and o2.template_order_flag = 1 ;--should filter out child order IDs
+    ))
+    , person p
+    , person_alias pa
+    , encntr_alias ea
+    , encounter e
+
+plan o1
+    where o1.active_ind = 1
+    and o1.order_status_cd = 2550 ;ordered
+    /* Pulled from the code value/description list below.  Will need to verify for each domain. 
+
+       2543.00	Completed
+       2544.00	Deleted
+       2545.00	Discontinued
+       2546.00	Future
+       2547.00	Incomplete
+       2549.00	On Hold, Med Student
+       2550.00	Ordered
+       2551.00	Pending Review
+       2552.00	Suspended
+       2553.00	Unscheduled
+     614538.00	Transfer/Canceled
+     635196.00	Pending Complete
+     635197.00	Voided With Results
+       2542.00	Canceled
+       2548.00	InProcess
+*/
+    and o1.catalog_cd = 5809954 ;vancomycin ;--Input catalog codes for first medication above.
+    and o1.DISCONTINUE_IND = 0
+    and o1.DISCONTINUE_EFFECTIVE_DT_TM = NULL
+    and o1.template_order_flag = 1 ;--should filter out child order IDs
+    
+join o2
+	where o1.encntr_id = o2.encntr_id
+	
+join p
+    where o1.person_id = p.person_id
+
+join pa
+	where p.person_id = pa.person_id
+	and pa.person_alias_type_cd = 10.00 ;--MRN -may need to verify code value in domain, codeset 4
+
+join e
+	where o1.person_id = e.person_id
+    and e.loc_facility_cd = 633867 ; BMC
+    ;-- and e.loc_nurse_unit_cd in (cd1, cd2, cd3, etc...) uncomment this line and add nurse unit codes to filter
+join ea	
+	where o1.encntr_id = ea.encntr_id
+	and ea.ENCNTR_ALIAS_TYPE_CD = 1077 ;--FIN -may need to verify code value in domain, codeset 319
+  
+order by
+     o1. CURRENT_START_DT_TM desc
+    , p.name_last
+    , p.name_first
+
+with nocounter, separator=" ", format
+    ,time = 300
+    ,maxrec = 200
+    
+    go
