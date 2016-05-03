@@ -20,6 +20,7 @@ select
 	, o.ordered_as_mnemonic
 	, pp.label_desc
 	, Order_Status = uar_get_code_display(o.order_status_cd)
+	, o.orig_order_dt_tm
 	, pp.cdm
 
 from
@@ -33,12 +34,11 @@ from
 	
 
 plan o 
-	where o.catalog_cd = 643195.00
-	and o.active_ind = 1
+	where o.active_ind = 1
 	and o.order_status_cd in (
-	              2547 ; incomplete
-							  , 2550 ; ordered
-							  )
+	              			2547 ; incomplete
+					, 2550 ; ordered
+				)
 
 /* add or removed based on the information below: 
 
