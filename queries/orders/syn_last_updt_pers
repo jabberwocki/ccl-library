@@ -1,3 +1,13 @@
+
+/**************************************************************************
+Query: Synonym Last Person to Update
+Purpose: Show update date as well as first and last name of the last person
+to update a given synonym.
+along with the NDC, CDM, HCPCS code, and last person to update the product. 
+Author:: J. Aaron Britton
+Date: 05/10/2016
+**************************************************************************/
+
 SELECT
                 ocs.mnemonic
                 , syn_type = uar_get_code_display(ocs.mnemonic_type_cd)
