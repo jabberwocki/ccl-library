@@ -6,6 +6,7 @@ to update a given synonym.
 along with the NDC, CDM, HCPCS code, and last person to update the product. 
 Author:: J. Aaron Britton
 Date: 05/10/2016
+Contact: jaaron.britton@gmail.com
 **************************************************************************/
 
 SELECT
