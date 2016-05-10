@@ -1,0 +1,33 @@
+/**************************************************************************
+Query: Product Last Person to Update
+Purpose: Show update date as well as first and last name of the last person
+to update a given product.
+along with the NDC, CDM, HCPCS code, and last person to update the product. 
+Author:: J. Aaron Britton
+Date: 05/10/2016
+Contact: jaaron.britton@gmail.com
+**************************************************************************/
+
+select
+                pp.cdm
+                , pp.label_desc
+                , md.updt_dt_tm
+                , p.name_last
+                , p.name_first
+ 
+from
+                pha_product pp
+                , medication_definition md
+                , prsnl p
+ 
+plan pp
+                where pp.cdm = "" ;insert CDM here between quotes
+ 
+join md
+                where pp.item_id = md.item_id
+ 
+join p
+                where md.updt_id = p.person_id
+               
+with time = 30
+
