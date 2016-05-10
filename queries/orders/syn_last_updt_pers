@@ -1,0 +1,21 @@
+SELECT
+                ocs.mnemonic
+                , syn_type = uar_get_code_display(ocs.mnemonic_type_cd)
+                , ocs.active_status_dt_tm
+                , p.name_last
+                , p.name_first
+               
+FROM
+                order_catalog_synonym   ocs
+                , prsnl p
+ 
+plan ocs
+                where ocs.active_ind = 0
+                and ocs.catalog_type_cd = 2516
+                and ocs.mnemonic = "" ;insert synonym name here or
+                ; and ocs.synonym_id =  ;insert synonm_id here
+ 
+join p
+                where ocs.active_status_prsnl_id = p.active_status_prsnl_id
+ 
+with time = 30
