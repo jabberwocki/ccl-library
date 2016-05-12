@@ -14,6 +14,7 @@ SELECT DISTINCT
 	, current_syn_oef = oef.oe_format_name
 	, ocs.mnemonic
 	, synonym_cki = ocs.cki
+	, multum_load_cki = mocl.synonym_cki
 	, multum_synonym_name = mdn.drug_name
 	, mltm_function_syn_match = evaluate (mdnm.function_id, 16, "Primary", 17, "Brand Name", 26, "C", 59, "M or Y", 60, 
 		"N or Z", 62, "E")
