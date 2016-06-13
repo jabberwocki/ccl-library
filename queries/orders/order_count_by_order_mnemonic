@@ -13,8 +13,8 @@ from
                 orders o
 where 
   o.catalog_type_cd = 2516 ;pharmacy catalog -could also be synonym or primary specific
-                          ; for synonym, use: o.synonym_id -be sure and change the "partition by" above to reflect the change
-                          ; for primary, use: o.catalog_cd -be sure and change the "partition by" above to reflect the change
+                          ; for synonym, use: o.synonym_id
+                          ; for primary, use: o.catalog_cd
                 and o.template_order_flag = 1 ;parent orders only
                 and o.orig_order_dt_tm between cnvtdatetime(cnvtdate(010116),0)
                                 and cnvtdatetime(cnvtdate(013116),235959)
