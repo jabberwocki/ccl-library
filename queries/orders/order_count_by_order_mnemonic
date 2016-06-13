@@ -1,0 +1,28 @@
+/**************************************************************************
+Query: Order Count by Order Mnemonic
+Purpose: Provide order counts for order_mnemonics in a given catalog
+Author: J. Aaron Britton
+Contact: jaaron.britton@gmail.com
+Date: 06/13/2016
+**************************************************************************/
+
+select distinct
+                o.order_mnemonic
+                , order_count = count(*)
+from
+                orders o
+where 
+  o.catalog_type_cd = 2516 ;pharmacy catalog -could also be synonym or primary specific
+                          ; for synonym, use: o.synonym_id -be sure and change the "partition by" above to reflect the change
+                          ; for primary, use: o.catalog_cd -be sure and change the "partition by" above to reflect the change
+                and o.template_order_flag = 1 ;parent orders only
+                and o.orig_order_dt_tm between cnvtdatetime(cnvtdate(010116),0)
+                                and cnvtdatetime(cnvtdate(013116),235959)
+                and o.encntr_id != 0.0
+ 
+group by
+                o.order_mnemonic
+order by
+                o.order_mnemonic
+                
+with time = 600, nocounter, separator = " "
