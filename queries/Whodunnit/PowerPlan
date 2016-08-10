@@ -1,0 +1,19 @@
+select
+  pc.description
+  , pc.updt_dt_tm "@SHORTDATETIME"
+  , p.name_full_formatted
+
+from
+  pathway_catalog pc
+  , prsnl p
+
+plan pc 
+  where cnvtlower(pc.description) = value(cnvtlower("plan_name_here*")) ;enter plan name here -not case sensitive
+
+join p
+  where p.person_id = pc.updt_id
+
+order by
+  pc.description
+
+with time = 30
