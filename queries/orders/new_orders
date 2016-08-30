@@ -1,0 +1,105 @@
+select distinct
+     oa.order_id
+    , o.order_mnemonic
+    , action_dttm = format(oa.action_dt_tm,"mm/dd/yy hh:mm:ss")
+    , o.clinical_display_line
+    , pt_name_last = p.name_last
+    , pt_name_first = p.name_first
+    , facility = uar_get_code_display(elh.loc_facility_cd)
+    , encounter_type = uar_get_code_display(elh.encntr_type_cd)
+    , o.template_order_flag
+    , fin = ea.alias
+    , modifier_position = uar_get_code_display(pp.position_cd)
+    , modifier_name_last = pp.name_last
+    , modifier_name_last = pp.name_first
+    
+
+from
+    orders o
+    , order_action oa
+    , person p
+    , encntr_alias ea
+    , encntr_loc_hist elh 
+    , prsnl pp
+
+plan o
+    where o.activity_type_cd = 705 ;-- Pharmacy activity type
+    and o.orig_ord_as_flag = 0
+    and o.template_order_flag in (0,1)
+
+join p
+    where o.person_id = p.person_id
+
+join oa
+    where o.order_id = oa.order_id
+    and oa.action_type_cd = 2534 ;-- order
+    /* 2524.00	Activate
+       2525.00	Add Alias
+       2526.00	Cancel
+       2527.00	Cancel/DC
+       2528.00	Collection
+       2529.00	Complete
+       2530.00	Void
+       2531.00	Demog Change
+       2532.00	Discontinue
+       2533.00	Modify
+       2534.00	Order
+       2535.00	Renew
+       2536.00	Reschedule
+       2537.00	Resume
+       2538.00	Review
+       2539.00	Status Change
+       2540.00	Suspend
+       2541.00	Undo
+     614532.00	Activate Student Order
+     614533.00	Discharge Order
+     614534.00	History Order
+     614535.00	Restore
+     614536.00	Resume/Renew
+     635194.00	Future Discontinue
+   56160313.00	Cancel/Reorder
+   99372286.00	Refill
+	*/
+    and oa.action_dt_tm between CNVTDATETIME(CURDATE-5, CURTIME3) AND CNVTDATETIME(CURDATE-3, CURTIME3)
+
+join ea
+    where o.encntr_id = ea.encntr_id
+    and ea.encntr_alias_type_cd = 1077
+
+join elh 
+	where o.encntr_id = elh.encntr_id       
+      AND elh.beg_effective_dt_tm <= oa.action_dt_tm       
+      AND elh.end_effective_dt_tm >= oa.action_dt_tm       
+      AND elh.active_ind = 1 
+      and elh.encntr_type_cd in ( 309308
+								, 309312
+								, 309313
+								)
+								/*
+								309308	Inpatient
+								309312	Observation
+								309313	Preadmit
+								*/
+
+join pp
+    where oa.action_personnel_id = pp.person_id
+    and pp.position_cd not in (
+    							448746143
+								, 448746871
+								, 448747594
+								, 448748335
+								)
+							
+    						/*
+							448746143	SH10 Pharmacist
+							448746871	SH10 Pharmacy DB Coordinator
+							448747594	SH10 Pharmacy Student/Intern
+							448748335	SH10 Pharmacy Tech
+							*/
+							
+    and pp.name_last != "SYSTEM"
+
+order
+	oa.action_dt_tm
+
+with FORMAT, time = 60
