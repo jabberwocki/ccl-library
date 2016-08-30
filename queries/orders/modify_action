@@ -1,0 +1,76 @@
+/************************************************************************** 
+Query: Modify Action Query 
+Purpose: List modify actions committed by non-pharmacy personnel over a 
+	 specified time period. 
+Author: J. Aaron Britton 
+Contact: jaaron.britton@gmail.com 
+Date: 08/30/2016 
+**************************************************************************/ 
+
+select distinct
+     oa.order_id
+    , o.order_mnemonic
+    , action_dttm = format(oa.action_dt_tm,"mm/dd/yy hh:mm:ss")
+    , o.clinical_display_line
+    , pt_name_last = p.name_last
+    , pt_name_first = p.name_first
+    , facility = uar_get_code_display(elh.loc_facility_cd)
+    , fin = ea.alias
+    , modifier_position = uar_get_code_display(pp.position_cd)
+    , modifier_name_last = pp.name_last
+    , modifier_name_last = pp.name_first
+    
+
+from
+    orders o
+    , order_action oa
+    , person p
+    , encntr_alias ea
+    , encntr_loc_hist elh 
+    , prsnl pp
+
+plan o
+    where o.activity_type_cd = 705 ;-- Pharmacy activity type
+    and o.orig_ord_as_flag = 0
+
+join p
+    where o.person_id = p.person_id
+
+join oa
+    where o.order_id = oa.order_id
+    and oa.action_type_cd = 2533 ;-- modify
+    and oa.action_dt_tm between CNVTDATETIME(CURDATE-30, CURTIME3) AND CNVTDATETIME(CURDATE-15 , CURTIME3)
+
+join ea
+    where o.encntr_id = ea.encntr_id
+    and ea.encntr_alias_type_cd = 1077
+
+join elh 
+	where o.encntr_id = elh.encntr_id       
+      AND elh.beg_effective_dt_tm <= oa.action_dt_tm       
+      AND elh.end_effective_dt_tm >= oa.action_dt_tm       
+      AND elh.active_ind = 1 
+
+join pp
+    where oa.action_personnel_id = pp.person_id
+    and pp.position_cd not in (
+    							448746143
+								, 448746871
+								, 448747594
+								, 448748335
+								)
+							
+    						/*
+							448746143	SH10 Pharmacist
+							448746871	SH10 Pharmacy DB Coordinator
+							448747594	SH10 Pharmacy Student/Intern
+							448748335	SH10 Pharmacy Tech
+							*/
+							
+    and pp.name_last != "SYSTEM"
+
+order
+	oa.action_dt_tm
+
+with FORMAT, time = 1200
+
