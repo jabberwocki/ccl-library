@@ -1,0 +1,37 @@
+/********************************************************************
+
+Order Detail Query by Order_ID
+
+Purpose: Provide order detail information by order_id
+Author: J. Aaron Britton
+Contact: jaaron.britton@gmail.com
+
+********************************************************************/
+
+select
+                o.order_id
+                , o.ordered_as_mnemonic
+                , o.clinical_display_line
+                , encntr_type = uar_get_code_display(e.encntr_type_cd)
+                , encntr_facility = uar_get_code_display(e.loc_facility_cd)
+                , encntr_nurse_unit = uar_get_code_display(e.loc_nurse_unit_cd)
+                , fin = ea.alias
+               
+from 
+                orders o
+                , encounter e
+                , encntr_alias ea
+                
+plan o 
+                where o.order_id =      ;enter order_id here
+
+                
+join e
+                where o.encntr_id = e.encntr_id
+
+join ea
+                where e.encntr_id = ea.encntr_id
+                and ea.encntr_alias_type_cd = 1077 ;FIN
+                             
+with 
+                time = 30             
