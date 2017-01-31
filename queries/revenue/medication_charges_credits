@@ -1,0 +1,59 @@
+/********************************************************************
+
+Pharmacy Charges and Credits Audit by Nurse Unit
+
+Purpose: Query for pharmacy charges and credits over a given period
+         of time filterable by nurse unit.
+Author: J. Aaron Britton
+Contact: jaaron.britton@gmail.com
+
+********************************************************************/
+
+select
+    dh.dispense_dt_tm "@SHORTDATETIME"
+    , dh.order_id
+    , o.dept_misc_line
+    , dh.doses
+    , pdh.charge_qty
+    , pdh.credit_qty
+    , pdh.price
+    , disp_event_type = uar_get_code_display(dh.disp_event_type_cd)
+    , disp_location = uar_get_code_display(dh.disp_loc_cd)
+    , pt_encntr_loc = uar_get_code_display(e.loc_nurse_unit_cd)
+    , fin = ea.alias
+    , p.name_last
+    , p.name_first
+ 
+from
+    dispense_hx dh
+    , prod_dispense_hx  pdh
+    , prsnl p
+    , orders o
+    , encounter e
+    , encntr_alias ea
+               
+plan dh
+    where dh.dispense_dt_tm > cnvtdatetime(curdate -30, 0) ;currently set to pull all actions that have occurred in the last 30 days
+        ;and dh.disp_event_type_cd in () ; use this to filter by event type -e.g., device dispense
+            
+join pdh
+    where dh.dispense_hx_id = pdh.dispense_hx_id
+ 
+join p
+    where pdh.updt_id = p.person_id
+ 
+join o
+    where dh.order_id = o.order_id
+ 
+join e
+    where o.encntr_id = e.encntr_id
+    and e.loc_nurse_unit_cd in () ;set encounter nurse unit filters here
+ 
+join ea
+    where e.encntr_id = ea.encntr_id
+    and ea.encntr_alias_type_cd = 1077 ; fin
+ 
+order by
+    dh.charge_dt_tm
+ 
+WITH time = 300
