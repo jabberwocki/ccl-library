@@ -20,7 +20,7 @@ select
 	, o.ordered_as_mnemonic
 	, pp.label_desc
 	, Order_Status = uar_get_code_display(o.order_status_cd)
-	, o.orig_order_dt_tm
+	, o.orig_order_dt_tm "@SHORTDATETIME"
 	, pp.cdm
 
 from
@@ -76,7 +76,7 @@ join pp
 	*/
 	 
 join e
-	where o.person_id = e.person_id
+	where where o.encntr_id = e.encntr_id
 
 join ea	
 	where e.encntr_id = ea.encntr_id
