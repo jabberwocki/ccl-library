@@ -1,0 +1,61 @@
+/********************************************************************
+
+Formulary IV Set Query
+
+Purpose: Provide active PharmNet IV Set and component details
+Author: J. Aaron Britton
+Contact: jaaron.britton@gmail.com
+
+********************************************************************/
+select
+	parent_id = md.item_id
+	, iv_set = mi.value
+	, component_desc = mi2.value
+	, component_cdm = mi3.value
+	, sir.component_item_id
+
+
+from
+	item_definition id
+	, medication_definition md
+	, med_identifier mi
+	, set_item_r sir
+	, med_identifier mi2
+	, med_identifier mi3
+
+	
+plan id
+	where id.active_ind = 1
+
+join md
+	where id.item_id = md.item_id
+	and md.med_type_flag = 3
+
+join mi
+	where md.item_id = mi.item_id
+	and mi.med_identifier_type_cd = 3097
+	and mi.primary_ind = 1
+	and mi.sequence = 1
+	and mi.med_product_id = 0
+	
+join sir
+	where md.item_id = sir.set_item_id
+
+join mi2
+	where sir.component_item_id = mi2.item_id
+	and mi2.med_identifier_type_cd = 3097
+	and mi2.primary_ind = 1
+	and mi2.sequence = 1
+	and mi2.med_product_id = 0
+
+join mi3
+	where sir.component_item_id = mi3.item_id
+	and mi3.med_identifier_type_cd = 3096 ; CDM
+	and mi3.primary_ind = 1
+	and mi3.sequence = 1
+	and mi3.med_product_id = 0
+
+order by
+	mi.value
+
+with time = 30
