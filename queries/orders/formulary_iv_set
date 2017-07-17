@@ -12,14 +12,12 @@ select
 	, iv_set = mi.value
 	, component_desc = mi2.value
 	, component_cdm = mi3.value
-	, sir.component_item_id
-
 
 from
 	item_definition id
 	, medication_definition md
 	, med_identifier mi
-	, set_item_r sir
+	, med_ingred_set mis
 	, med_identifier mi2
 	, med_identifier mi3
 
@@ -37,19 +35,19 @@ join mi
 	and mi.primary_ind = 1
 	and mi.sequence = 1
 	and mi.med_product_id = 0
-	
-join sir
-	where md.item_id = sir.set_item_id
+
+join mis
+	where md.item_id = mis.parent_item_id
 
 join mi2
-	where sir.component_item_id = mi2.item_id
+	where mis.child_item_id = mi2.item_id
 	and mi2.med_identifier_type_cd = 3097
 	and mi2.primary_ind = 1
 	and mi2.sequence = 1
 	and mi2.med_product_id = 0
 
 join mi3
-	where sir.component_item_id = mi3.item_id
+	where mis.child_item_id = mi3.item_id
 	and mi3.med_identifier_type_cd = 3096 ; CDM
 	and mi3.primary_ind = 1
 	and mi3.sequence = 1
@@ -57,5 +55,6 @@ join mi3
 
 order by
 	mi.value
+	, md.item_id
 
 with time = 30
